@@ -2,23 +2,51 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <title>Küçük Karaoke - Gömülü Ses</title>
+  <title>Küçük Karaoke — Çok Şarkılı</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
   <h1>Küçük Karaoke</h1>
-  <p>Sayfadaki oynat tuşuna bas: arkada şarkı çalarken sözler <strong>harf harf</strong> yazacaktır.</p>
 
-  <!-- 1) MP3'ünü aynı klasöre koy ve dosya adını buraya yaz -->
-  <audio id="audio" src="music.mp3" preload="metadata" controls
-         style="display:block; margin:10px 0;"></audio>
+  <!-- Şarkı seçimi -->
+  <div>
+    <label>Şarkı:
+      <select id="songSelect"></select>
+    </label>
+    <button id="prevBtn">‹ Önceki</button>
+    <button id="nextBtn">Sonraki ›</button>
+  </div>
+
+  <!-- Oynatıcı -->
+  <audio id="audio" preload="metadata" controls style="display:block; margin:10px 0;"></audio>
 
   <hr/>
+
+  <!-- Sözler -->
   <div id="nowline"  style="font-size:28px; font-family:monospace; white-space:pre-wrap;"></div>
   <div id="nextline" style="opacity:.6; font-family:monospace; margin-top:8px;"></div>
 
-  <!-- 2) LRC'ni buraya yapıştır (senin paylaştığın .lrc içeriğini koyabilirsin) -->
-    <script id="lrc-data" type="text/plain">
+  <hr/>
+
+  <!-- Dosyadan ekle (geçici / bu sekme açık kaldığı sürece) -->
+  <details>
+    <summary><strong>Dosyadan ekle (geçici):</strong> MP3 + LRC yükle ve listeye ekle</summary>
+    <div style="margin-top:8px;">
+      <label>Başlık: <input id="addTitle" type="text" placeholder="Şarkı adı"/></label>
+      <label style="margin-left:8px;">MP3/WAV: <input id="addAudio" type="file" accept="audio/*"/></label>
+      <label style="margin-left:8px;">LRC: <input id="addLrc" type="file" accept=".lrc,.txt,text/plain"/></label>
+      <button id="addBtn">Listeye ekle</button>
+      <small style="display:block; margin-top:6px;">Not: Bu yöntemle eklenen şarkılar kalıcı değildir; sayfa yenilenince kaybolur.</small>
+    </div>
+  </details>
+
+  <!-- === GÖMÜLÜ (KALICI) LRC BLOKLARI ===
+       Buraya yeni şarkılar için yeni <script type="text/plain" id="lrc-..."> blokları ekleyebilirsin.
+       ÖNEMLİ: LRC içinde "</script>" geçiyorsa, </ yerine <\/ yaz (tarayıcıya takılmamak için).
+  -->
+
+  <!-- ÖRNEK 1: Buraya kendi LRC’ni yapıştır (ve ../audio/ dosyana göre src yolunu altta JS’te belirt) -->
+  <script id="lrc-example1" type="text/plain">
 [00:15.00]I wanna rock right now
 [00:16.90]I wanna, I wanna rock right now
 [00:18.60]I wanna, I wanna rock right now
@@ -108,12 +136,49 @@
 [04:20.50]I wanna, I wanna rock right now
 [04:22.30]I wanna, I wanna rock right now
 [04:24.40]I wanna, I wanna rock right now
-
+[04:29.50]by RentAnAdviser.com
   </script>
 
+  <!-- ÖRNEK 2: İstersen ikinci bir gömülü şarkı -->
+  <script id="lrc-example2" type="text/plain">
+[00:25.72]Kendime geldim geleli dostlar
+[00:29.34]Olamam kimseye düşman
+[00:32.58]Bi şüphem yok kefenim sağlam
+[00:35.65]İçerim ben bu akşam
+[00:40.47]
+[00:51.23]Sesleri duydum duyalı dostlar
+[00:54.93]Yola çıktın yeni baştan
+[00:58.18]Acelem yok hedefim sağlam
+[01:01.35]İçerim ben bu akşam
+[01:05.15]İçerim ben bu akşam
+[01:08.08]İçerim ben
+[01:12.02]Ben burda bu akşam
+[01:15.91]Ben burda bu akşam
+[01:19.01]Ben burda bu akşam
+[01:22.44]Ben burda bu akşam
+[01:28.86]İçerim ben
+[01:31.10]
+[01:55.52]Sizleri gördüm göreli dostlar
+[01:58.92]Hemen her gün bana bayram
+[02:02.23]Yarınım yok sevenim sağlam
+[02:05.31]İçerim ben bu akşam
+[02:08.27]İçerim ben bu akşam
+[02:11.12]İçerim ben
+[02:13.33]
+[02:17.03]Ben burda bu akşam
+[02:19.83]Ben burda bu akşam
+[02:23.08]Ben burda bu akşam
+[02:26.05]Ben burda bu akşam
+[02:32.59]İçerim ben bu akşam
+[02:35.64]Ben burda bu akşam
+[02:39.20]Ben burda bu akşam
+[02:42.27]Ben burda bu akşam
+[02:48.88]İçerim ben
+[02:49.08]
+  </script>"
 
   <script>
-  // --- Basit LRC ayrıştırıcı ---
+  // ===== LRC AYRIŞTIRICI =====
   function parseLRC(text) {
     if (!text) return [];
     const lines = text.replace(/\r\n?/g, "\n").split("\n");
@@ -122,7 +187,7 @@
     for (const raw of lines) {
       const line = raw.trim();
       if (!line) continue;
-      if (/^\[[a-zA-Z]+:/.test(line)) continue; // [ti:], [ar:] gibi meta etiketlerini atla
+      if (/^\[[a-zA-Z]+:/.test(line)) continue; // [ti:], [ar:], [al:] vb.
 
       let m; const stamps = [];
       while ((m = tsRe.exec(line)) !== null) {
@@ -131,8 +196,8 @@
         const frac = m[3] || "";
         let f = 0;
         if (frac) {
-          if (frac.length === 2) f = parseInt(frac, 10) / 100;    // cs
-          else if (frac.length === 3) f = parseInt(frac, 10) / 1000; // ms
+          if (frac.length === 2) f = parseInt(frac, 10) / 100;
+          else if (frac.length === 3) f = parseInt(frac, 10) / 1000;
           else f = parseInt(frac, 10) / Math.pow(10, frac.length);
         }
         stamps.push(mm * 60 + ss + f);
@@ -145,7 +210,6 @@
     return events;
   }
 
-  // Verilen t anında aktif satırın index'i (son time <= t)
   function findEventIndex(events, t) {
     let lo = 0, hi = events.length - 1, ans = -1;
     while (lo <= hi) {
@@ -156,22 +220,57 @@
     return ans;
   }
 
+  // ===== OYNATICI VE GÖRÜNÜM =====
   const audio = document.getElementById('audio');
   const nowEl = document.getElementById('nowline');
   const nextEl = document.getElementById('nextline');
+  const songSelect = document.getElementById('songSelect');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
 
-  const EVENTS = parseLRC(document.getElementById('lrc-data').textContent || "");
-
+  let PLAYLIST = [];      // {id,title,audioSrc,lrcText,kind:'embedded'|'runtime'}
+  let ACTIVE = -1;
+  let ACTIVE_EVENTS = [];
   let rafId = null;
+
+  function renderSelect() {
+    songSelect.innerHTML = "";
+    PLAYLIST.forEach((s, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = s.title;
+      songSelect.appendChild(opt);
+    });
+    if (ACTIVE >= 0) songSelect.value = String(ACTIVE);
+  }
+
+  function loadSong(index) {
+    if (index < 0 || index >= PLAYLIST.length) return;
+    ACTIVE = index;
+    const s = PLAYLIST[index];
+    // Ses kaynağı
+    audio.src = s.audioSrc;
+    audio.load();
+    // LRC
+    ACTIVE_EVENTS = parseLRC(s.lrcText || "");
+    // Başlık ipucu
+    audio.title = s.title;
+    // Seçimi yansıt
+    renderSelect();
+    // Görünümü sıfırla
+    nowEl.textContent = "";
+    nextEl.textContent = (ACTIVE_EVENTS[0] ? ACTIVE_EVENTS[0].text : "");
+  }
+
   function step() {
     const t = audio.currentTime || 0;
-    const idx = findEventIndex(EVENTS, t);
+    const idx = findEventIndex(ACTIVE_EVENTS, t);
     if (idx >= 0) {
-      const cur = EVENTS[idx];
-      const next = EVENTS[idx + 1];
+      const cur = ACTIVE_EVENTS[idx];
+      const next = ACTIVE_EVENTS[idx + 1];
       const t0 = cur.time;
       const t1 = (next ? next.time : (isFinite(audio.duration) ? audio.duration : t0 + 2));
-      const span = Math.max(0.3, t1 - t0); // en az 0.3s yazma süresi
+      const span = Math.max(0.3, t1 - t0);
       const full = cur.text || "";
       const n = full.length;
       let shown = n;
@@ -183,20 +282,85 @@
       nextEl.textContent = (next && next.text) ? next.text : "";
     } else {
       nowEl.textContent = "";
-      nextEl.textContent = (EVENTS[0] ? EVENTS[0].text : "");
+      nextEl.textContent = (ACTIVE_EVENTS[0] ? ACTIVE_EVENTS[0].text : "");
     }
     rafId = requestAnimationFrame(step);
   }
 
-  // Oynat/duraklat olaylarına bağlan: kullanıcı play'e basınca animasyonu başlat
-  audio.addEventListener('play', () => {
-    if (rafId === null) rafId = requestAnimationFrame(step);
+  audio.addEventListener('play', () => { if (rafId === null) rafId = requestAnimationFrame(step); });
+  audio.addEventListener('pause', () => { if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; } });
+  audio.addEventListener('ended', () => { if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; } });
+
+  songSelect.addEventListener('change', () => {
+    const idx = parseInt(songSelect.value, 10);
+    loadSong(idx);
   });
-  audio.addEventListener('pause', () => {
-    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+
+  prevBtn.addEventListener('click', () => {
+    if (!PLAYLIST.length) return;
+    const idx = (ACTIVE - 1 + PLAYLIST.length) % PLAYLIST.length;
+    loadSong(idx);
   });
-  audio.addEventListener('ended', () => {
-    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  nextBtn.addEventListener('click', () => {
+    if (!PLAYLIST.length) return;
+    const idx = (ACTIVE + 1) % PLAYLIST.length;
+    loadSong(idx);
+  });
+
+  // ===== BAŞLANGIÇTA GÖMÜLÜ (KALICI) ŞARKILARI EKLE =====
+  // Burada kendi dosya adını ve LRC blok id'sini yaz.
+  // Örnek: MP3 dosyasını index.html ile aynı klasöre koy ve adını yaz (ör. rock.mp3)
+  const EMBEDDED = [
+    // { title: "Rock That Body", audioSrc: "RockThatBody.mp3", lrcId: "lrc-rock-that-body" },
+    { title: "Örnek Şarkı 1", audioSrc: "music1.mp3", lrcId: "lrc-example1" },
+    { title: "Örnek Şarkı 2", audioSrc: "music2.mp3", lrcId: "lrc-example2" },
+  ];
+  EMBEDDED.forEach(e => {
+    const el = document.getElementById(e.lrcId);
+    if (!el) return;
+    PLAYLIST.push({
+      id: e.lrcId,
+      title: e.title,
+      audioSrc: e.audioSrc,     // örn: "audio/Parca.mp3" da olabilir
+      lrcText: el.textContent || "",
+      kind: "embedded"
+    });
+  });
+  renderSelect();
+  if (PLAYLIST.length) loadSong(0);
+
+  // ===== DOSYADAN EKLE (GEÇİCİ) =====
+  const addTitle = document.getElementById('addTitle');
+  const addAudio = document.getElementById('addAudio');
+  const addLrc   = document.getElementById('addLrc');
+  const addBtn   = document.getElementById('addBtn');
+
+  addBtn.addEventListener('click', async () => {
+    const title = (addTitle.value || "").trim() || "Yeni Şarkı";
+    const fAudio = addAudio.files && addAudio.files[0];
+    const fLrc   = addLrc.files && addLrc.files[0];
+    if (!fAudio || !fLrc) { alert("Lütfen MP3/WAV ve LRC dosyalarını seç."); return; }
+
+    const audioURL = URL.createObjectURL(fAudio);
+    const reader = new FileReader();
+    reader.onload = () => {
+      let txt = String(reader.result || "");
+      txt = txt.replaceAll("</", "<\\/"); // güvenlik: </script> kaçır
+      PLAYLIST.push({
+        id: "runtime-" + Date.now(),
+        title,
+        audioSrc: audioURL,
+        lrcText: txt,
+        kind: "runtime"
+      });
+      renderSelect();
+      loadSong(PLAYLIST.length - 1);
+      // formu temizle
+      addTitle.value = "";
+      addAudio.value = "";
+      addLrc.value = "";
+    };
+    reader.readAsText(fLrc, 'utf-8');
   });
   </script>
 </body>
