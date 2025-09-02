@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <title>Küçük Karaoke - Tek Şarkı</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <h1>Küçük Karaoke</h1>
+  <p>1) Aşağıdan şarkı dosyanı seç. 2) <em>Oynat</em> de. Sözler harf harf yazacaktır.</p>
+
+  <div>
+    <label>Ses dosyası seç (MP3/WAV vb): <input id="filepicker" type="file" accept="audio/*" /></label>
+    <button id="playBtn" disabled>Oynat</button>
+    <button id="pauseBtn" disabled>Duraklat</button>
+  </div>
+
+  <audio id="audio" preload="metadata" controls style="display:block; margin-top: 10px;"></audio>
+
+  <hr/>
+
+  <div id="nowline" style="font-size: 28px; font-family: monospace; white-space: pre-wrap;"></div>
+  <div id="nextline" style="opacity:.6; font-family: monospace; margin-top:8px;"></div>
+
+  <!-- Gömülü LRC (dosya yüklemeden de çalışır) -->
+  <script id="lrc-data" type="text/plain">
+﻿[00:00.00]by RentAnAdviser.com
+[00:15.00]I wanna rock right now
+[00:16.90]I wanna, I wanna rock right now
+[00:18.60]I wanna, I wanna rock right now
+[00:20.40]Now, now, rock right now
+[00:22.50]I wanna, I wanna rock right now
+[00:24.20]I wanna, I wanna rock right now
+[00:26.20]I wanna, I wanna rock right now
+[00:30.90]I wanna da-, I wanna dance in the lights
+[00:34.50]I wanna ro-, I wanna rock yo' body right
+[00:38.60]I wanna go, I wanna go for a ride
+[00:42.00]Hop in the music and rock yo' body right
+[00:46.10]Rock that body, c'mon c'mon, rock that body (Rock yo' body)
+[00:49.00]Rock that body, c'mon c'mon, rock that body
+[00:51.00]Rock that body, c'mon c'mon, rock that body (Rock yo' body)
+[00:53.70]Rock that body, c'mon c'mon, rock that body
+[00:56.80]Rock that body, c'mon c'mon, rock that body
+[01:00.30]Let me see your body rock
+[01:02.20]Shakin' from the bottom and top
+[01:04.00]Freak to what the DJ drop
+[01:05.90]We be the ones to make it hot (to make it hot)
+[01:08.80]Electric shock, energy like a billion watts
+[01:11.70]Space be booming, the speakers pop
+[01:13.60]Galactic comb and Mr. Spock
+[01:15.80]We bumping in your parking lot
+[01:17.70]When you comin up in the spot
+[01:19.40]Don't bring nothin' we call P. Dot
+[01:21.40]Cause we burning around the clock
+[01:23.30]Hit the lights and then turn them off
+[01:25.20]If you bring that don't make you stop
+[01:27.00]Like the jungle, we run the block
+[01:28.90]No-one rolling the way we rock, way we rock
+[01:31.90]I wanna rock right now
+[01:33.40]I wanna, I wanna rock right now
+[01:35.30]I wanna, I wanna rock right now
+[01:39.80]I wanna da-, I wanna dance in the lights
+[01:43.50]I wanna ro-, I wanna rock yo' body right
+[01:47.60]I wanna go, I wanna go for a ride
+[01:51.40]Hop in the music and rock yo' body right
+[01:55.00]Rock that body, c'mon c'mon, rock that body (Rock that body)
+[01:58.80]Rock that body, c'mon c'mon, rock that body
+[02:02.60]Rock that body, c'mon c'mon, rock that body (Rock yo' body)
+[02:05.60]Rock that body, c'mon c'mon, rock that body
+[02:09.80]Superfly ladies, all of my superfly ladies
+[02:13.30]All of my superfly ladies
+[02:15.20]All of my super, superfly ladies
+[02:17.80]Yeah, you could be big boned
+[02:20.00]Long as you feel like you on
+[02:21.80]You could be the model type, skinny with no appetite
+[02:25.70]Short, stacked, black or white
+[02:27.60]Long as you do what you like
+[02:29.40]Body outta sight, body, body outta sight
+[02:32.60]Yeah
+[02:32.80]She does the two step, and the tongue drop
+[02:35.00]She does the cabbage patch, and the bus stop
+[02:36.90]She like electro, she love hip-hop
+[02:38.70]She like the reggae, she feel punk rock
+[02:40.70]She love samba, and the mambo
+[02:42.60]She like to breakdance, and calypso
+[02:44.50]Get a lil' crazy, get a lil' stupid
+[02:46.60]Get a lil' crazy, crazy, crazy
+[02:48.80]I wanna da-, I wanna dance in the lights
+[02:52.30]I wanna ro-, I wanna rock yo' body right
+[02:56.70]I wanna go, I wanna go for a ride
+[03:00.10]Hop in the music and rock yo' body right
+[03:08.80]Rock yo' body right (Sat upright)
+[03:16.60]Rock yo' body right (Sat upright)
+[03:22.50]C'mon, yeah
+[03:27.40]Rock that body, c'mon c'mon, rock that body
+[03:30.30]C'mon, yeah
+[03:31.20]Rock that body, c'mon c'mon, rock that body
+[03:34.20]Go oh oh oh, oh-oh-oh
+[03:38.40]Let go oh oh oh, oh-oh-oh
+[03:42.00]Let go oh oh oh, oh-oh-oh
+[03:45.70]Let go oh oh oh, oh-oh-oh
+[03:49.90]I wanna, I wanna rock right now
+[03:53.10]I wanna, I wanna rock
+[03:55.00]I wanna, I wanna rock
+[03:57.20]Let go oh oh oh, oh-oh-oh
+[04:00.00]I wanna, I wanna rock
+[04:03.00]I wanna, I wanna rock
+[04:05.10]Let go oh oh oh, oh-oh-oh
+[04:09.20]Let go oh oh oh, oh-oh-oh
+[04:12.70]I wanna, I wanna rock right now
+[04:14.60]I wanna, I wanna rock right now
+[04:16.60]I wanna, I wanna rock right now
+[04:18.50]Now, now, rock right now
+[04:20.50]I wanna, I wanna rock right now
+[04:22.30]I wanna, I wanna rock right now
+[04:24.40]I wanna, I wanna rock right now
+[04:29.50]by RentAnAdviser.com
+
+  </script>
+
+  <script>
+  // Basit LRC ayrıştırıcı
+  function parseLRC(text) {
+    const lines = text.split(/\n/);
+    const events = [];
+    const tsRe = /\[(\d+):(\d+)(?:[\.:](\d+))?\]/g;
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      // başlık etiketlerini atla (ör. [ti:], [ar:])
+      if (/^\[[a-zA-Z]+:/.test(line)) continue;
+
+      let match;
+      const stamps = [];
+      while ((match = tsRe.exec(line)) !== null) {
+        let mm = parseInt(match[1], 10);
+        let ss = parseInt(match[2], 10);
+        let frac = match[3] || "";
+        let f = 0;
+        if (frac) {
+          // 2 hane => centisecond, 3 hane => millisecond gibi düşün
+          if (frac.length === 2) f = parseInt(frac, 10) / 100;
+          else if (frac.length === 3) f = parseInt(frac, 10) / 1000;
+          else f = parseInt(frac, 10) / Math.pow(10, frac.length);
+        }
+        const t = mm * 60 + ss + f;
+        stamps.push(t);
+      }
+      const lyric = line.replace(tsRe, "").trim();
+      if (!stamps.length) continue; // zaman yoksa atla
+      // bazı LRC'lerde satır boş olabilir; gene de olay oluşturabiliriz
+      for (const t of stamps) {
+        events.push({ time: t, text: lyric });
+      }
+    }
+    events.sort((a,b) => a.time - b.time);
+    return events;
+  }
+
+  // Yardımcı: verilen zamanda hangi olay aktif?
+  function findEventIndex(events, t) {
+    // binary search: son time <= t
+    let lo = 0, hi = events.length - 1, ans = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (events[mid].time <= t) { ans = mid; lo = mid + 1; }
+      else hi = mid - 1;
+    }
+    return ans;
+  }
+
+  const audio = document.getElementById('audio');
+  const nowEl = document.getElementById('nowline');
+  const nextEl = document.getElementById('nextline');
+  const playBtn = document.getElementById('playBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const filepicker = document.getElementById('filepicker');
+
+  const lrcRaw = document.getElementById('lrc-data').textContent;
+  const EVENTS = parseLRC(lrcRaw);
+
+  let rafId = null;
+
+  function step() {
+    const t = audio.currentTime || 0;
+    const idx = findEventIndex(EVENTS, t);
+    if (idx >= 0) {
+      const cur = EVENTS[idx];
+      const next = EVENTS[idx + 1];
+      const t0 = cur.time;
+      const t1 = (next ? next.time : (isFinite(audio.duration) ? audio.duration : t0 + 2));
+      const span = Math.max(0.3, t1 - t0); // en az 0.3s yazma süresi
+      const full = cur.text || "";
+      const n = full.length;
+      let shown = n;
+      if (n > 0) {
+        const progress = Math.max(0, Math.min(1, (t - t0) / span));
+        shown = Math.floor(progress * n);
+      }
+      nowEl.textContent = full.slice(0, shown);
+      nextEl.textContent = (next && next.text) ? next.text : "";
+    } else {
+      // henüz söz başlamadı
+      nowEl.textContent = "";
+      nextEl.textContent = (EVENTS[0] ? EVENTS[0].text : "");
+    }
+    rafId = requestAnimationFrame(step);
+  }
+
+  filepicker.addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    audio.src = url;
+    audio.load();
+    playBtn.disabled = false;
+    pauseBtn.disabled = false;
+  });
+
+  playBtn.addEventListener('click', async () => {
+    try {
+      await audio.play();
+      if (rafId === null) rafId = requestAnimationFrame(step);
+    } catch (e) {
+      alert("Oynatmada sorun: " + e);
+    }
+  });
+
+  pauseBtn.addEventListener('click', () => {
+    audio.pause();
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  });
+
+  // Kullanıcı kendi ses dosyasını seçene kadar kontrolleri kilitle
+  playBtn.disabled = true;
+  pauseBtn.disabled = true;
+  </script>
+</body>
+</html>
