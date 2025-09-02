@@ -2,29 +2,23 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <title>Küçük Karaoke - Tek Şarkı</title>
+  <title>Küçük Karaoke - Gömülü Ses</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
   <h1>Küçük Karaoke</h1>
-  <p>1) Aşağıdan şarkı dosyanı seç. 2) <em>Oynat</em> de. Sözler harf harf yazacaktır.</p>
+  <p>Sayfadaki oynat tuşuna bas: arkada şarkı çalarken sözler <strong>harf harf</strong> yazacaktır.</p>
 
-  <div>
-    <label>Ses dosyası seç (MP3/WAV vb): <input id="filepicker" type="file" accept="audio/*" /></label>
-    <button id="playBtn" disabled>Oynat</button>
-    <button id="pauseBtn" disabled>Duraklat</button>
-  </div>
-
-  <audio id="audio" preload="metadata" controls style="display:block; margin-top: 10px;"></audio>
+  <!-- 1) MP3'ünü aynı klasöre koy ve dosya adını buraya yaz -->
+  <audio id="audio" src="music.mp3" preload="metadata" controls
+         style="display:block; margin:10px 0;"></audio>
 
   <hr/>
+  <div id="nowline"  style="font-size:28px; font-family:monospace; white-space:pre-wrap;"></div>
+  <div id="nextline" style="opacity:.6; font-family:monospace; margin-top:8px;"></div>
 
-  <div id="nowline" style="font-size: 28px; font-family: monospace; white-space: pre-wrap;"></div>
-  <div id="nextline" style="opacity:.6; font-family: monospace; margin-top:8px;"></div>
-
-  <!-- Gömülü LRC (dosya yüklemeden de çalışır) -->
-  <script id="lrc-data" type="text/plain">
-﻿[00:00.00]by RentAnAdviser.com
+  <!-- 2) LRC'ni buraya yapıştır (senin paylaştığın .lrc içeriğini koyabilirsin) -->
+    <script id="lrc-data" type="text/plain">
 [00:15.00]I wanna rock right now
 [00:16.90]I wanna, I wanna rock right now
 [00:18.60]I wanna, I wanna rock right now
@@ -114,52 +108,45 @@
 [04:20.50]I wanna, I wanna rock right now
 [04:22.30]I wanna, I wanna rock right now
 [04:24.40]I wanna, I wanna rock right now
-[04:29.50]by RentAnAdviser.com
 
   </script>
 
+
   <script>
-  // Basit LRC ayrıştırıcı
+  // --- Basit LRC ayrıştırıcı ---
   function parseLRC(text) {
-    const lines = text.split(/\n/);
+    if (!text) return [];
+    const lines = text.replace(/\r\n?/g, "\n").split("\n");
     const events = [];
-    const tsRe = /\[(\d+):(\d+)(?:[\.:](\d+))?\]/g;
+    const tsRe = /\[(\d+):(\d+)(?:[\.|:](\d+))?\]/g;
     for (const raw of lines) {
       const line = raw.trim();
       if (!line) continue;
-      // başlık etiketlerini atla (ör. [ti:], [ar:])
-      if (/^\[[a-zA-Z]+:/.test(line)) continue;
+      if (/^\[[a-zA-Z]+:/.test(line)) continue; // [ti:], [ar:] gibi meta etiketlerini atla
 
-      let match;
-      const stamps = [];
-      while ((match = tsRe.exec(line)) !== null) {
-        let mm = parseInt(match[1], 10);
-        let ss = parseInt(match[2], 10);
-        let frac = match[3] || "";
+      let m; const stamps = [];
+      while ((m = tsRe.exec(line)) !== null) {
+        const mm = parseInt(m[1], 10) || 0;
+        const ss = parseInt(m[2], 10) || 0;
+        const frac = m[3] || "";
         let f = 0;
         if (frac) {
-          // 2 hane => centisecond, 3 hane => millisecond gibi düşün
-          if (frac.length === 2) f = parseInt(frac, 10) / 100;
-          else if (frac.length === 3) f = parseInt(frac, 10) / 1000;
+          if (frac.length === 2) f = parseInt(frac, 10) / 100;    // cs
+          else if (frac.length === 3) f = parseInt(frac, 10) / 1000; // ms
           else f = parseInt(frac, 10) / Math.pow(10, frac.length);
         }
-        const t = mm * 60 + ss + f;
-        stamps.push(t);
+        stamps.push(mm * 60 + ss + f);
       }
       const lyric = line.replace(tsRe, "").trim();
-      if (!stamps.length) continue; // zaman yoksa atla
-      // bazı LRC'lerde satır boş olabilir; gene de olay oluşturabiliriz
-      for (const t of stamps) {
-        events.push({ time: t, text: lyric });
-      }
+      if (!stamps.length) continue;
+      for (const t of stamps) events.push({ time: t, text: lyric });
     }
     events.sort((a,b) => a.time - b.time);
     return events;
   }
 
-  // Yardımcı: verilen zamanda hangi olay aktif?
+  // Verilen t anında aktif satırın index'i (son time <= t)
   function findEventIndex(events, t) {
-    // binary search: son time <= t
     let lo = 0, hi = events.length - 1, ans = -1;
     while (lo <= hi) {
       const mid = (lo + hi) >> 1;
@@ -172,15 +159,10 @@
   const audio = document.getElementById('audio');
   const nowEl = document.getElementById('nowline');
   const nextEl = document.getElementById('nextline');
-  const playBtn = document.getElementById('playBtn');
-  const pauseBtn = document.getElementById('pauseBtn');
-  const filepicker = document.getElementById('filepicker');
 
-  const lrcRaw = document.getElementById('lrc-data').textContent;
-  const EVENTS = parseLRC(lrcRaw);
+  const EVENTS = parseLRC(document.getElementById('lrc-data').textContent || "");
 
   let rafId = null;
-
   function step() {
     const t = audio.currentTime || 0;
     const idx = findEventIndex(EVENTS, t);
@@ -200,40 +182,22 @@
       nowEl.textContent = full.slice(0, shown);
       nextEl.textContent = (next && next.text) ? next.text : "";
     } else {
-      // henüz söz başlamadı
       nowEl.textContent = "";
       nextEl.textContent = (EVENTS[0] ? EVENTS[0].text : "");
     }
     rafId = requestAnimationFrame(step);
   }
 
-  filepicker.addEventListener('change', (e) => {
-    const f = e.target.files && e.target.files[0];
-    if (!f) return;
-    const url = URL.createObjectURL(f);
-    audio.src = url;
-    audio.load();
-    playBtn.disabled = false;
-    pauseBtn.disabled = false;
+  // Oynat/duraklat olaylarına bağlan: kullanıcı play'e basınca animasyonu başlat
+  audio.addEventListener('play', () => {
+    if (rafId === null) rafId = requestAnimationFrame(step);
   });
-
-  playBtn.addEventListener('click', async () => {
-    try {
-      await audio.play();
-      if (rafId === null) rafId = requestAnimationFrame(step);
-    } catch (e) {
-      alert("Oynatmada sorun: " + e);
-    }
-  });
-
-  pauseBtn.addEventListener('click', () => {
-    audio.pause();
+  audio.addEventListener('pause', () => {
     if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
   });
-
-  // Kullanıcı kendi ses dosyasını seçene kadar kontrolleri kilitle
-  playBtn.disabled = true;
-  pauseBtn.disabled = true;
+  audio.addEventListener('ended', () => {
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  });
   </script>
 </body>
 </html>
